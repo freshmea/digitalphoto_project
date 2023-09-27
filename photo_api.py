@@ -17,8 +17,9 @@ def main():
     store = file.Storage("token.json")
     creds = store.get()
     if not creds or creds.invalid:
-        flow = client.flow_from_clientsecrets("credentials.json", SCOPES)
+        flow = client.flow_from_clientsecrets("client_secret_240566316207-lcq43h4vipivrg519crr66pjeqgrbreo.apps.googleusercontent.com.json", SCOPES)
         creds = tools.run_flow(flow, store)
     service = build("photoslibrary", "v1", http=creds.authorize(Http()))
 
 main()
+
