@@ -27,14 +27,15 @@ class Googlephotodl(Node):
         self.create_timer(3, self.googledl_callback)
         self.mypath = '/home/jetson/Pictures/test'
         self.get_logger().info('Hello World')
-        self.delete_image()
+        # self.delete_image()
         self.search_image()
 
     def googledl_callback(self):
-        self.get_logger().info('Hello World')
+        self.get_logger().info('callback excuted')
         # check file number of soni directory
         files = os.listdir(self.mypath)
         file_count = len([f for f in files if isfile(join(self.mypath, f))])
+        self.search_image()
         # if file number is less than 10, download image file
         if file_count < 10:
             self.dl_image()
@@ -60,28 +61,35 @@ class Googlephotodl(Node):
         
     def search_image(self):
         #Search image files
-        print("Search image files...")
-        dtToday = datetime.date.today()
-        dt7DaysAgo = dtToday - datetime.timedelta(days=7)
-
-        results = self.service.mediaItems().search(
-            body={
-                "filters":{
-                    "dateFilter":{
-                        "ranges":[
-                            {"startDate":{"year":dt7DaysAgo.year,"month":dt7DaysAgo.month,"day":dt7DaysAgo.day},
-                                "endDate":{"year":dtToday.year,"month":dtToday.month,"day":dtToday.day}
-                                }
-                        ]
-                    },
-                    "mediaTypeFilter":{
-                        "mediaTypes":["PHOTO"]
+        
+        while True:
+            print("Search image files...")
+            dtToday = datetime.date.today()
+            dtToday = dtToday - datetime.timedelta(weeks=random.randint(1,500))
+            dt7DaysAgo = dtToday - datetime.timedelta(weeks=1)
+            results = self.service.mediaItems().search(
+                body={
+                    "filters":{
+                        "dateFilter":{
+                            "ranges":[
+                                {"startDate":{"year":dt7DaysAgo.year,"month":dt7DaysAgo.month,"day":dt7DaysAgo.day},
+                                    "endDate":{"year":dtToday.year,"month":dtToday.month,"day":dtToday.day}
+                                    }
+                            ]
+                        },
+                        "mediaTypeFilter":{
+                            "mediaTypes":["PHOTO"]
+                        }
                     }
                 }
-            }
-        ).execute()
-
+            ).execute()
+            try:
+                if len(results.get("mediaItems", [])) != 0:
+                    break
+            except:
+                pass
         self.items = results.get("mediaItems", [])
+            
         print(len(self.items))
     
     def dl_image(self):

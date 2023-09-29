@@ -27,10 +27,12 @@ class Photo(Node):
         self.img_origin = None
         self.counter = SPWAN_TIME*FPS
         self.mypath = '/home/jetson/Pictures/test'
+        # window width x height full size
+        cv2.namedWindow("app", cv2.WINDOW_NORMAL)
+        cv2.setWindowProperty("app", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        cv2.moveWindow('app', self.screen.x - 1, self.screen.y - 1)
     
     def show_photo(self):
-        self.get_logger().info('Hello World')
-        
         # get all photo file list
         if self.counter == SPWAN_TIME*FPS:
             onlyfiles = [ join(self.mypath,f) for f in listdir(self.mypath) if isfile(join(self.mypath,f)) ]
@@ -39,22 +41,29 @@ class Photo(Node):
             # get random photo file
             file_path = random.choice(onlyfiles)
             self.img_origin = cv2.imread(file_path)
+            # resize img to fit window
+            self.img_origin = cv2.resize(self.img_origin, (self.screen.width, self.screen.height))
             # reset counter
             self.counter = 0
             self.dimming = 0
             # delete readed file
             self.delete_file(file_path)
-            
-        # window width x height full size
-        cv2.namedWindow("app", cv2.WINDOW_NORMAL)
-        cv2.setWindowProperty("app", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-        
-        # resize img to fit window
-        width = self.screen.width
-        height = self.screen.height
-        self.img_origin = cv2.resize(self.img_origin, (width, height))
-        cv2.moveWindow('app', self.screen.x - 1, self.screen.y - 1)
-        
+        # change dimming value
+        if self.counter < DIMMING_TIME*FPS:
+            self.dimming += 1
+            img = self.change_photo()    
+        elif self.counter > (SPWAN_TIME - DIMMING_TIME)*FPS:
+            self.dimming -= 1 
+            img = self.change_photo()
+        else:
+            img = self.img_origin.copy()
+        # show image
+        cv2.imshow('app', img)
+        cv2.waitKey(int(1000/FPS))
+        # count
+        self.counter += 1
+    
+    def change_photo(self):
         # dimming
         img = self.img_origin.copy()
         r, g, b = cv2.split(img)
@@ -62,17 +71,7 @@ class Photo(Node):
         g = cv2.multiply(g, self.dimming, scale=1/FPS)
         b = cv2.multiply(b, self.dimming, scale=1/FPS)
         img = cv2.merge((r, g, b))
-        if self.counter < DIMMING_TIME*FPS:
-            self.dimming += 1
-        if self.counter > (SPWAN_TIME - DIMMING_TIME)*FPS:
-            self.dimming -= 1 
-        print(self.counter, self.dimming)
-        cv2.imshow('app', img)
-        print(width, height, cv2.getWindowImageRect('app'),
-                cv2.getWindowImageRect('app')[2],
-                cv2.getWindowImageRect('app')[3])
-        cv2.waitKey(int(1000/FPS))
-        self.counter += 1
+        return img
     
     def delete_file(self, file):
         remove(file)

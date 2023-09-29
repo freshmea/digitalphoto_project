@@ -42,4 +42,8 @@ making of digital photo program
   * photo_api_2.py
   * [참고 링크](https://m.blog.naver.com/PostView.naver?isHttpsRedirect=true&blogId=eziya76&logNo=221340903346)
   * api 에 접속할 때 static_discovery=False 옵션을 주어야 함. 안그러면 에러가 남.
-  * 
+  * 런치 파일 작성 digitalphoto.launch.py
+  * googledl 노드 작성
+    * 특정 폴더에 10개의 파일이 유지 되도록 다운로드
+  * photoapp 노드 수정
+    * 파일을 읽고 나서 읽은 파일은 삭제 하도록 수정 
