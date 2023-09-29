@@ -19,7 +19,10 @@ def main():
     if not creds or creds.invalid:
         flow = client.flow_from_clientsecrets("client_secret_240566316207-lcq43h4vipivrg519crr66pjeqgrbreo.apps.googleusercontent.com.json", SCOPES)
         creds = tools.run_flow(flow, store)
-    service = build("photoslibrary", "v1", http=creds.authorize(Http()))
+    service = build("photoslibrary", "v1", credentials=creds, static_discovery=False)
+    # service._http = Http(timeout=60)
+    
 
-main()
+if __name__ == "__main__":
+    main()
 
