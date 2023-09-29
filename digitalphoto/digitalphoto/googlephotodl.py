@@ -24,7 +24,7 @@ class Googlephotodl(Node):
     def __init__(self):
         super().__init__('googlephotodl')
         self.check_token()
-        self.create_timer(3, self.googledl_callback)
+        self.create_timer(1, self.googledl_callback)
         self.mypath = '/home/jetson/Pictures/test'
         self.get_logger().info('Hello World')
         # self.delete_image()
@@ -65,7 +65,7 @@ class Googlephotodl(Node):
         while True:
             print("Search image files...")
             dtToday = datetime.date.today()
-            dtToday = dtToday - datetime.timedelta(weeks=random.randint(1,500))
+            dtToday = dtToday - datetime.timedelta(weeks=random.randint(1,100))
             dt7DaysAgo = dtToday - datetime.timedelta(weeks=1)
             results = self.service.mediaItems().search(
                 body={
