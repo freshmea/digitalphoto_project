@@ -60,8 +60,11 @@ making of digital photo program
   * googledl api 사용시 최대 사용횟수가 하루 만회로 제한 되어 있음.
   * search 함수를 파일 갯수 체크 후에 사용하도록 바꿈.
   * [참고 링크](https://developers.google.com/photos/library/guides/api-limits-quotas)
+  * fan을 분리 해서 service automagic-fan 을 stop 시킴
+  * [참고 링크](https://www.jetsonhacks.com/2019/10/07/jetson-nano-automatically-start-nvpmodel-on-boot/)
+  * jtop 실행 pip install -U jetson-stats 으로 설치 함.
 
 todo list
 * gpio 핀을 사용해서 pir 센서 node 를 만들고 parameter 로 설정할 수 있도록 하기
 * audio 입력 노드만들기
-*  
+* 온도 체크 노드 만들기
