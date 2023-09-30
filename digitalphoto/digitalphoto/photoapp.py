@@ -7,7 +7,7 @@ import rclpy
 import cv2
 from rclpy.node import Node
 import screeninfo
-from os import listdir, remove
+from os import listdir, remove, system
 from os.path import isfile, join
 import random
 import numpy as np
@@ -35,9 +35,11 @@ class Photo(Node):
         self.add_on_set_parameters_callback(self.parameter_callback)
         
         if self.show_option == 0:
-            self.create_timer(self.spawn_time, self.show_photo)
+            self.timer = self.create_timer(self.spawn_time, self.show_photo)
+        elif self.show_option == 1:
+            self.timer = self.create_timer(30, self.show_photo)
         else:
-            self.create_timer(1/self.fps, self.show_photo)
+            self.timer = self.create_timer(1/self.fps, self.show_photo)
         self.screen = screeninfo.get_monitors()[0]
         self.dimming = 0
         self.img_origin = None
@@ -54,6 +56,7 @@ class Photo(Node):
     
     def show_photo(self):
         if self.show_option == 0:
+            self.timer.timer_period_ns = int(1_000_000_000*self.spawn_time)
             # get random photo file
             file_path = self.onlyfiles[self.cnt]
             self.cnt += 1
@@ -83,7 +86,8 @@ class Photo(Node):
             cv2.waitKey(int(1000*self.spawn_time))
             self.get_logger().info(f'{self.cnt} {len(self.onlyfiles)} {file_path}')
         elif self.show_option == 1:
-            pass
+            self.timer.timer_period_ns = int(1_000_000_000*self.spawn_time*10)
+            system('xset dpms force off')
         else:
             # get all photo file list
             if self.counter == self.spawn_time * self.fps:
