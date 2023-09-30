@@ -1,7 +1,7 @@
-# namespace:
-/photoapp:
+/photo:
   ros__parameters:
-    background_b: 0
-    background_g: 255
-    background_r: 0
+    dimming_time: 1
+    fps: 30
+    show_option: 0
+    spawn_time: 5
     use_sim_time: false
