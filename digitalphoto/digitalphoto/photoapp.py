@@ -12,6 +12,7 @@ from os.path import isfile, join
 import random
 import numpy as np
 import time
+from rcl_interfaces.msg import SetParametersResult
 
 class Photo(Node):
     def __init__(self):
@@ -23,12 +24,16 @@ class Photo(Node):
                 ('spawn_time', 5),
                 ('dimming_time', 1),
                 ('show_option', 0),
+                ('mypath', '/home/jetson/Pictures/sonii')
             ]
         )
         self.fps = self.get_parameter('fps').value
         self.spawn_time = self.get_parameter('spawn_time').value
         self.dimming_time = self.get_parameter('dimming_time').value
         self.show_option = self.get_parameter('show_option').value
+        self.mypath = self.get_parameter('mypath').value
+        self.add_on_set_parameters_callback(self.parameter_callback)
+        
         if self.show_option == 0:
             self.create_timer(self.spawn_time, self.show_photo)
         else:
@@ -37,7 +42,6 @@ class Photo(Node):
         self.dimming = 0
         self.img_origin = None
         self.counter = self.spawn_time*self.fps
-        self.mypath = '/home/jetson/Pictures/sonii'
         # window width x height full size
         cv2.namedWindow("app", cv2.WINDOW_NORMAL)
         cv2.setWindowProperty("app", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
@@ -78,9 +82,11 @@ class Photo(Node):
             cv2.imshow('app', self.img_origin)
             cv2.waitKey(int(1000*self.spawn_time))
             self.get_logger().info(f'{self.cnt} {len(self.onlyfiles)} {file_path}')
+        elif self.show_option == 1:
+            pass
         else:
             # get all photo file list
-            if self.counter == self.spwan_time * self.fps:
+            if self.counter == self.spawn_time * self.fps:
                 onlyfiles = [ join(self.mypath,f) for f in listdir(self.mypath) if isfile(join(self.mypath,f)) ]
                 # file list check jpg, png, jpeg
                 onlyfiles = [f for f in onlyfiles if f.endswith(('.jpg', '.png', '.jpeg', '.JPG', '.PNG', '.JPEG'))]
@@ -98,7 +104,7 @@ class Photo(Node):
             if self.counter < self.dimming_time*self.fps:
                 self.dimming += 1
                 img = self.change_photo()    
-            elif self.counter > (self.spwan_time - self.dimming_time)*self.fps:
+            elif self.counter > (self.spawn_time - self.dimming_time)*self.fps:
                 self.dimming -= 1 
                 img = self.change_photo()
             else:
@@ -122,6 +128,20 @@ class Photo(Node):
     
     def delete_file(self, file):
         remove(file)
+    
+    def parameter_callback(self, params):
+        for param in params:
+            if param.name == 'fps':
+                self.fps = param.value
+            elif param.name == 'spawn_time':
+                self.spawn_time = param.value
+            elif param.name == 'dimming_time':
+                self.dimming_time = param.value
+            elif param.name == 'show_option':
+                self.show_option = param.value
+            elif param.name == 'mypath':
+                self.mypath = param.value
+        return SetParametersResult(successful=True)
 
 def main():
     rclpy.init()

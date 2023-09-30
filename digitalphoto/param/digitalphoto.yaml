@@ -2,6 +2,12 @@
   ros__parameters:
     dimming_time: 1
     fps: 30
+    mypath: /home/jetson/Pictures/sonii
     show_option: 0
     spawn_time: 5
+    use_sim_time: false
+/googlephotodl:
+  ros__parameters:
+    max_file_num: 10
+    mypath: /home/jetson/Pictures/test
     use_sim_time: false

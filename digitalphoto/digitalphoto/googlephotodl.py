@@ -15,6 +15,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 import wget
 import random
+from rcl_interfaces.msg import SetParametersResult
 
 
 # If modifying these scopes, delete the file token.pickle.
@@ -23,10 +24,19 @@ SCOPES = ['https://www.googleapis.com/auth/photoslibrary.readonly']
 class Googlephotodl(Node):
     def __init__(self):
         super().__init__('googlephotodl')
+        self.declare_parameters(
+            namespace='',
+            parameters=[
+                ('max_file_num', 10),
+                ('mypath', '/home/jetson/Pictures/test')
+            ]
+        )
+        self.mypath = self.get_parameter('mypath').value
+        self.max_file_num = self.get_parameter('max_file_num').value
+        self.add_on_set_parameters_callback(self.parameter_callback)
+        
         self.check_token()
-        self.create_timer(1, self.googledl_callback)
-        self.mypath = '/home/jetson/Pictures/test'
-        self.get_logger().info('Hello World')
+        self.create_timer(3, self.googledl_callback)
         # self.delete_image()
         self.search_image()
 
@@ -35,9 +45,9 @@ class Googlephotodl(Node):
         # check file number of soni directory
         files = os.listdir(self.mypath)
         file_count = len([f for f in files if isfile(join(self.mypath, f))])
-        self.search_image()
         # if file number is less than 10, download image file
-        if file_count < 10:
+        if file_count < self.max_file_num:
+            self.search_image()
             self.dl_image()
     
     def check_token(self):
@@ -111,6 +121,15 @@ class Googlephotodl(Node):
         print("Deleting all jpg files...")
         command = "rm -rf "+self.mypath+"/*.jpg"
         os.system(command)
+    
+    def parameter_callback(self, params):
+        for param in params:
+            if param.name == 'max_file_num':
+                self.max_file_num = param.value
+            if param.name == 'mypathdl':
+                self.mypath = param.value
+        return SetParametersResult(successful=True)
+        
         
 
 def main(args=None):
