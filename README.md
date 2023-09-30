@@ -47,3 +47,16 @@ making of digital photo program
     * 특정 폴더에 10개의 파일이 유지 되도록 다운로드
   * photoapp 노드 수정
     * 파일을 읽고 나서 읽은 파일은 삭제 하도록 수정 
+  
+  - - -
+  ## 2023_9_30
+  - - -
+  * 옵션을 만들어서 dimming 효과 선택 사항으로 바꿈
+  * resize 를 변형해서 비율을 변화 하지 않고 늘리게 바꿈
+  * 나무 액자안으로 젯슨 나노 보드 삽입
+  * xset dpms force off 를 이용해서 화면을 끄는 방법을 사용함.
+  * [참고 링크](https://askubuntu.com/questions/62858/turn-off-monitor-using-command-line)
+  * 외부에서 파라미터 변경을 요청하면 내부에서 파라미터를 변경하도록 수정
+  * googledl api 사용시 최대 사용횟수가 하루 만회로 제한 되어 있음.
+  * search 함수를 파일 갯수 체크 후에 사용하도록 바꿈.
+  * [참고 링크](https://developers.google.com/photos/library/guides/api-limits-quotas)
