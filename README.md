@@ -60,3 +60,8 @@ making of digital photo program
   * googledl api 사용시 최대 사용횟수가 하루 만회로 제한 되어 있음.
   * search 함수를 파일 갯수 체크 후에 사용하도록 바꿈.
   * [참고 링크](https://developers.google.com/photos/library/guides/api-limits-quotas)
+
+todo list
+* gpio 핀을 사용해서 pir 센서 node 를 만들고 parameter 로 설정할 수 있도록 하기
+* audio 입력 노드만들기
+*  
