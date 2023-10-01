@@ -68,7 +68,7 @@ class Photo(Node):
             # show image
             cv2.imshow('app', self.img_origin)
             cv2.waitKey(10)
-            self.get_logger().info(f'{self.cnt} {len(self.onlyfiles)} {self.file_path}')
+            self.get_logger().info(f'{len(self.onlyfiles)} {self.file_path}')
         elif self.show_option == 1:
             self.timer.timer_period_ns = int(1_000_000_000*self.spawn_time*10)
             system('xset dpms force off')
