@@ -68,6 +68,8 @@ class Photo(Node):
             self.img_origin = cv2.imread(self.file_path)
             # resize img to fit window with ratio 16:9 screen
             self.fit_window_size((random.randint(0,255), random.randint(0,255), random.randint(0,255)))
+            # input text year month day
+            cv2.putText(self.img_origin, self.file_path.split('/')[-1].split('.')[0], (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             # show image
             cv2.imshow('app', self.img_origin)
             cv2.waitKey(10)
@@ -90,12 +92,14 @@ class Photo(Node):
                 self.fit_window_size()
                 # add text fps in self.img_origin
                 cv2.putText(self.img_origin, f'fps: {fps:.2f}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                # put text year month day
+                cv2.putText(self.img_origin, self.file_path.split('/')[-1].split('.')[0], (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
                 cv2.imshow('app', self.img_origin)
                 cv2.waitKey(10)
             else:
             # if file end
                 self.cap.release()
-                file_path = None
+                self.file_path = None
                 self.get_logger().info(f'video end {self.file_path}')
             # show image
             
