@@ -89,6 +89,9 @@ class Photo(Node):
                 cv2.putText(self.img_origin, f'fps: {fps:.2f}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
                 # put text year month day
                 cv2.putText(self.img_origin, self.file_path.split('/')[-1].split('.')[0], (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                # add progressbar
+                cv2.rectangle(self.img_origin, (0, self.screen.height - 10), (int(self.screen.width * self.cap.get(cv2.CAP_PROP_POS_FRAMES) / self.cap.get(cv2.CAP_PROP_FRAME_COUNT)), self.screen.height), (0, 255, 0), -1)
+                
                 cv2.imshow('app', self.img_origin)
                 cv2.waitKey(10)
             else:
