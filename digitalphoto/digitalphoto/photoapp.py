@@ -42,54 +42,66 @@ class Photo(Node):
             self.timer = self.create_timer(1/self.fps, self.show_photo)
         self.screen = screeninfo.get_monitors()[0]
         self.dimming = 0
-        self.img_origin = None
+        self.img_origin = np.zeros((self.screen.height, self.screen.width, 3), np.uint8)
         self.counter = self.spawn_time*self.fps
         # window width x height full size
         cv2.namedWindow("app", cv2.WINDOW_NORMAL)
         cv2.setWindowProperty("app", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
         cv2.moveWindow('app', self.screen.x - 1, self.screen.y - 1)
         # get all photo file list
-        self.onlyfiles = [ join(self.mypath,f) for f in listdir(self.mypath) if isfile(join(self.mypath,f)) ]
-        self.onlyfiles = [f for f in self.onlyfiles if f.endswith(('.jpg', '.png', '.jpeg', '.JPG', '.PNG', '.JPEG'))]
+        self.files = [ join(self.mypath,f) for f in listdir(self.mypath) if isfile(join(self.mypath,f)) ]
+        self.onlyfiles = [f for f in self.files if f.endswith(('.jpg', '.png', '.jpeg', '.JPG', '.PNG', '.JPEG'))]
+        self.onlyvideo = [f for f in self.files if f.endswith(('.mp4', '.avi', '.wmv', '.MP4', '.AVI', '.WMV'))]
         # time.delay(10)
         self.cnt = 0
+        self.filepath = None
+        self.fps_time = time.time()
     
     def show_photo(self):
         if self.show_option == 0:
             self.timer.timer_period_ns = int(1_000_000_000*self.spawn_time)
             # get random photo file
-            file_path = self.onlyfiles[self.cnt]
+            self.file_path = self.onlyfiles[self.cnt]
             self.cnt += 1
             if len(self.onlyfiles) < self.cnt:
                 self.cnt = 0
-            file_path = random.choice(self.onlyfiles)
-            self.img_origin = cv2.imread(file_path)
-            # get image size
-            height, width, _ = self.img_origin.shape
+            self.img_origin = cv2.imread(self.file_path)
             # resize img to fit window with ratio 16:9 screen
-            if width * 9 > height * 16 :
-                self.img_origin = cv2.resize(self.img_origin, (self.screen.width, int(self.screen.width*height/width)))
-                # add white space to fit 16:9 screen both side
-                white_space = np.zeros(( (self.screen.height - int(self.screen.width*height/width))//2, self.screen.width, 3), np.uint8)
-                white_space[:] = (random.randint(0,255), random.randint(0,255), random.randint(0,255))
-                self.img_origin = np.vstack((self.img_origin, white_space))
-                self.img_origin = np.vstack((white_space, self.img_origin))
-            else:
-                self.img_origin = cv2.resize(self.img_origin, (int(self.screen.height*width/height), self.screen.height))
-                # add white space to fit 16:9 screen both side
-                white_space = np.zeros((self.screen.height, (self.screen.width - int(self.screen.height*width/height))//2, 3), np.uint8)
-                white_space[:] = (random.randint(0,255), random.randint(0,255), random.randint(0,255))
-                self.img_origin = np.hstack((self.img_origin, white_space))
-                self.img_origin = np.hstack((white_space, self.img_origin))
+            self.fit_window_size((random.randint(0,255), random.randint(0,255), random.randint(0,255)))
             # show image
             cv2.imshow('app', self.img_origin)
-            cv2.waitKey(int(1000*self.spawn_time))
-            self.get_logger().info(f'{self.cnt} {len(self.onlyfiles)} {file_path}')
+            cv2.waitKey(10)
+            self.get_logger().info(f'{self.cnt} {len(self.onlyfiles)} {self.file_path}')
         elif self.show_option == 1:
             self.timer.timer_period_ns = int(1_000_000_000*self.spawn_time*10)
             system('xset dpms force off')
+        elif self.show_option == 2:
+            # calculate fps
+            fps = 1.0 / (time.time() - self.fps_time)
+            self.fps_time = time.time()
+            self.timer.timer_period_ns = int(1_000_000_000/self.fps)
+            if not self.file_path or not self.file_path.endswith(('.mp4', '.avi', '.wmv', '.MP4', '.AVI', '.WMV')):
+                self.file_path = random.choice(self.onlyvideo)
+                self.cap = cv2.VideoCapture(self.file_path)
+                self.fps = self.cap.get(cv2.CAP_PROP_FPS)
+            ret, self.img_origin = self.cap.read()
+            # resize img to fit window with ratio 16:9 screen
+            if ret:
+                self.fit_window_size()
+                # add text fps in self.img_origin
+                cv2.putText(self.img_origin, f'fps: {fps:.2f}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                cv2.imshow('app', self.img_origin)
+                cv2.waitKey(10)
+            else:
+            # if file end
+                self.cap.release()
+                file_path = None
+                self.get_logger().info(f'video end {self.file_path}')
+            # show image
+            
         else:
             # get all photo file list
+            self.timer.timer_period_ns = int(1_000_000_000/self.fps)
             if self.counter == self.spawn_time * self.fps:
                 onlyfiles = [ join(self.mypath,f) for f in listdir(self.mypath) if isfile(join(self.mypath,f)) ]
                 # file list check jpg, png, jpeg
@@ -116,7 +128,7 @@ class Photo(Node):
             img = self.img_origin.copy()
             # show image
             cv2.imshow('app', img)
-            cv2.waitKey(int(1000/self.fps))
+            cv2.waitKey(10)
             # count
             self.counter += 1
     
@@ -129,6 +141,22 @@ class Photo(Node):
         b = cv2.multiply(b, self.dimming, scale=1/self.fps)
         img = cv2.merge((r, g, b))
         return img
+    
+    def fit_window_size(self, color=(0,0,0)):
+        # get image size
+        height, width, _ = self.img_origin.shape
+        if width * 9 > height * 16:
+            self.img_origin = cv2.resize(self.img_origin, (self.screen.width, int(self.screen.width*height/width)))
+            # add white space to fit 16:9 screen both side
+            white_space = np.zeros(( (self.screen.height - int(self.screen.width*height/width))//2, self.screen.width, 3), np.uint8)
+            white_space[:] = color
+            self.img_origin = np.vstack((white_space, self.img_origin, white_space))
+        else:
+            self.img_origin = cv2.resize(self.img_origin, (int(self.screen.height*width/height), self.screen.height))
+            # add white space to fit 16:9 screen both side
+            white_space = np.zeros((self.screen.height, (self.screen.width - int(self.screen.height*width/height))//2, 3), np.uint8)
+            white_space[:] = color
+            self.img_origin = np.hstack((white_space, self.img_origin, white_space))
     
     def delete_file(self, file):
         remove(file)

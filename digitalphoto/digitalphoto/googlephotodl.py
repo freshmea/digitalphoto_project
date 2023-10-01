@@ -41,7 +41,6 @@ class Googlephotodl(Node):
         self.search_image()
 
     def googledl_callback(self):
-        self.get_logger().info('callback excuted')
         # check file number of soni directory
         files = os.listdir(self.mypath)
         file_count = len([f for f in files if isfile(join(self.mypath, f))])
@@ -73,7 +72,7 @@ class Googlephotodl(Node):
         #Search image files
         
         while True:
-            print("Search image files...")
+            self.get_logger().info("Search image files...")
             dtToday = datetime.date.today()
             dtToday = dtToday - datetime.timedelta(weeks=random.randint(1,100))
             dt7DaysAgo = dtToday - datetime.timedelta(weeks=1)
@@ -118,7 +117,7 @@ class Googlephotodl(Node):
 
     def delete_image(self):
         # delete all jpg files
-        print("Deleting all jpg files...")
+        self.get_logger().info("Deleting all jpg files...")
         command = "rm -rf "+self.mypath+"/*.jpg"
         os.system(command)
     
