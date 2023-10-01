@@ -52,19 +52,14 @@ class Photo(Node):
         self.files = [ join(self.mypath,f) for f in listdir(self.mypath) if isfile(join(self.mypath,f)) ]
         self.onlyfiles = [f for f in self.files if f.endswith(('.jpg', '.png', '.jpeg', '.JPG', '.PNG', '.JPEG'))]
         self.onlyvideo = [f for f in self.files if f.endswith(('.mp4', '.avi', '.wmv', '.MP4', '.AVI', '.WMV'))]
-        # time.delay(10)
-        self.cnt = 0
-        self.filepath = None
+        self.file_path = None
         self.fps_time = time.time()
     
     def show_photo(self):
         if self.show_option == 0:
             self.timer.timer_period_ns = int(1_000_000_000*self.spawn_time)
             # get random photo file
-            self.file_path = self.onlyfiles[self.cnt]
-            self.cnt += 1
-            if len(self.onlyfiles) < self.cnt:
-                self.cnt = 0
+            self.file_path = random.choice(self.onlyfiles)
             self.img_origin = cv2.imread(self.file_path)
             # resize img to fit window with ratio 16:9 screen
             self.fit_window_size((random.randint(0,255), random.randint(0,255), random.randint(0,255)))
